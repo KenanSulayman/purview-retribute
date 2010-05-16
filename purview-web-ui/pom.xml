@@ -5,7 +5,7 @@
     <parent>
         <artifactId>purview</artifactId>
         <groupId>org.purview</groupId>
-        <version>1.0</version>
+        <version>1.2</version>
     </parent>
 
     <artifactId>purview-web-ui</artifactId>
@@ -17,47 +17,29 @@
     <dependencies>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>purview-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>purview-default-analysers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-svggen</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.squeryl</groupId>
+            <artifactId>squeryl_2.8.0.Beta1-RC8</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>bilinear-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>copy-move-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>error-level-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>luminance-gradient-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>metadata-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>nearest-neighbor-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>noop-analyser</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.liftweb</groupId>
@@ -83,8 +65,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-svggen</artifactId>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
         </dependency>
     </dependencies>
 

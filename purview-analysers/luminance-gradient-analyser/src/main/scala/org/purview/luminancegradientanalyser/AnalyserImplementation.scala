@@ -1,87 +1,120 @@
 package org.purview.luminancegradientanalyser
 
-import java.awt.image.BufferedImage
 import org.purview.core.analysis.Analyser
-import org.purview.core.analysis.Settings
-import org.purview.core.analysis.settings.FloatRangeSetting
 import org.purview.core.data.Color
 import org.purview.core.data.ImageMatrix
+import org.purview.core.data.Matrix
 import org.purview.core.report.Information
-import org.purview.core.report.Message
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportImage
-import org.purview.core.transforms.MatrixToImage
+import org.purview.core.transforms.Fragmentize
 import scala.math._
 
-class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
-  val name = "Luminance Gradient"
+class AnalyserImplementation extends Analyser[ImageMatrix] {
+  val name = "Luminance gradient"
   val description = "Plots the general light direction in the image"
+  override val version = Some("1.0")
+  override val author = Some("Moritz Roth & David Flemström")
 
-  val scaleSetting = FloatRangeSetting("Blue scale", 2, 20)
-  scaleSetting.value = 10 //default
+  val FragmentSize = 3
 
-  val blendSetting = FloatRangeSetting("Blending", 0f, 1f)
-  blendSetting.value = 0f
+  val grayscale = {
+    status("Converting image to luminance values")
+    for(in <- input) yield
+      in map (color => 0.2126f * color.r + 0.7152f * color.g + 0.0722f * color.b)
+  }
 
-  val settings = List(scaleSetting, blendSetting)
+  val fragments = grayscale >- Fragmentize(FragmentSize, FragmentSize)
 
-  private def scale = scaleSetting.value
-  private def blending = blendSetting.value
-
-  val luminanceGradient = for(in <- input) yield {
-    status("Calculating the luminance gradient for the image")
-    for {
-      (x, y, src) <- in.cells
-      srcBrightness = sqrt(pow(src.r, 2) *  0.241 + pow(src.g, 2) *  0.691 + pow(src.b, 2) *  0.068)
-    } yield if(x == 0 || x == in.width - 1 || y == 0 || y == in.height - 1)
-      Color.Black
-    else
-    {
-      val pixels = for {
-        dx <- x - 1 to x + 1
-        dy <- y - 1 to y + 1
-        current = in(dx, dy)
-        if !(x == 0 && y == 0)
-      } yield (abs(dx-x) + abs(dy-y) match {
-          case 1 => ValueColorCell(sqrt(pow(current.r, 2) *  0.241 +
-                                        pow(current.g, 2) *  0.691 +
-                                        pow(current.b, 2) *  0.068) * 0.9712, current, dx, dy)
-          case 2 => ValueColorCell(sqrt(pow(current.r, 2) *  0.241 +
-                                        pow(current.g, 2) *  0.691 +
-                                        pow(current.b, 2) *  0.068) * 0.5445, current, dx, dy)
-          case _ => ValueColorCell(0d, current, dx, dy)
-        })
-
-      val max = pixels.max
-      val diff = sqrt(pow(src.r - max.color.r, 2) +
-                      pow(src.g - max.color.g, 2) +
-                      pow(src.b - max.color.b, 2))
-
-      val clr1 = x - max.x match {
-        case -1 => new Color(1, 0, 0, 0)
-        case 0 => new Color(1, 0, 0.5f, 0)
-        case 1 => new Color(1, 0, 1, 0f)
-      }
-
-      val clr2 = y - max.y match {
-        case -1 => new Color(1f, 0f, clr1.g, 0f)
-        case 0 => new Color(1f, 0.5f, clr1.g, 0f)
-        case 1 => new Color(1f, 1f, clr1.g, 0f)
-      }
-
-      new Color(1,
-                (1 - blending) * clr2.r               + blending * src.r,
-                (1 - blending) * clr2.g               + blending * src.g,
-                (1 - blending) * diff.toFloat * scale + blending * src.b)
+  val vectors = for(frag <- fragments) yield {
+    status("Calculating light direction vectors")
+    val pi = Pi.toFloat
+    val off = -(FragmentSize - 1) / 2f
+    for(cell <- frag) yield {
+      //Compute gradients in x and y direction
+      val vecX = Matrix.sequence(cell.cells).foldLeft(0f)((acc, next) => acc + next._3 * (next._1 + off))
+      val vecY = Matrix.sequence(cell.cells).foldLeft(0f)((acc, next) => acc + next._3 * (next._2 + off))
+      //Get gradient angle (angle from polar coordinates)
+      val asimuth = if(vecX > 0f && vecY >= 0f)
+        atan(vecY/vecX)
+      else if(vecX > 0f && vecY < 0f)
+        atan(vecY/vecX) + 2f * pi
+      else if (vecX < 0f)
+        atan(vecY/vecX) + pi
+      else if (vecX == 0f && vecY > 0f)
+        pi / 2f
+      else if (vecX == 0f && vecY < 0f)
+        (3f * pi) / 2f
+      else //x == 0 && y == 0
+        0f
+      //Get the color corresponding to the angle
+      Color(1f, -sin(asimuth).toFloat / 2f + 0.5f, -cos(asimuth).toFloat / 2f + 0.5f, 0f)
     }
   }
 
-  def imageReport(img: BufferedImage): Set[ReportEntry] =
+  val edge = for(frags <- fragments) yield {
+    //Compute the gradient vector length, this is basically a sobel edge detector
+    for(in <- frags) yield {
+      val a11 = in(0, 0)
+      val a12 = in(0, 1)
+      val a13 = in(0, 2)
+      val a21 = in(1, 0)
+      val a22 = in(1, 1)
+      val a23 = in(1, 2)
+      val a31 = in(2, 0)
+      val a32 = in(2, 1)
+      val a33 = in(2, 2)
+      sqrt {
+        2 * {
+          a11 * a11 +
+          2 * a11 * {
+            a12 + a21 -
+            a23 - a32 - a33
+          } +
+          2 * a12 * a12 +
+          2 * a12 * {
+            a13 - a31 -
+            a32 - a32 - a33
+          } +
+          a13 * a13 -
+          2 * a13 * {
+            a21 - a23 +
+            a31 + a32
+          } +
+          2 * a21 * a21 -
+          2 * a21 * {
+            a23 + a23 -
+            a31 + a33
+          } +
+          2 * a23 * a23 -
+          2 * a23 * {
+            a31 - a33
+          } +
+          a31 * a31 +
+          2 * a31 * a32 +
+          2 * a32 * a32 +
+          2 * a32 * a33 +
+          a33 * a33
+        }
+      }.toFloat
+    }
+  }
+
+  val luminanceGradient = for(in <- input; vecs <- vectors; edg <- edge) yield {
+    status("Merging the luminance gradient for the image")
+    
+    for((x, y, color) <- in.cells) yield {
+      val xoff = x - FragmentSize / 2
+      val yoff = y - FragmentSize / 2
+      if(xoff > 0 && yoff > 0 && xoff < vecs.width && yoff < vecs.height) {
+        val c = vecs(xoff, yoff)
+        Color(1f, c.r, c.g, edg(xoff, yoff))
+      } else Color.Black
+    }
+  }
+
+  def imageReport(img: Matrix[Color]): Set[ReportEntry] =
     Set(new ReportImage(Information, "Output image", 0, 0, img))
 
-  val result = luminanceGradient >- MatrixToImage() >- imageReport
-}
-
-sealed case class ValueColorCell(value: Double, color: Color, x: Int, y: Int) extends Ordered[ValueColorCell] {
-  def compare(that: ValueColorCell) = this.value.compare(that.value)
+  val result = luminanceGradient >- imageReport
 }

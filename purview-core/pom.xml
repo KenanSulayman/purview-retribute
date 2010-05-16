@@ -5,10 +5,10 @@
     <parent>
         <artifactId>purview</artifactId>
         <groupId>org.purview</groupId>
-        <version>1.0</version>
+        <version>1.2</version>
     </parent>
 
-    <artifactId>core</artifactId>
+    <artifactId>purview-core</artifactId>
 
     <name>Purview - Core library</name>
     <description>Provides the Purview core library used as a base for other components</description>

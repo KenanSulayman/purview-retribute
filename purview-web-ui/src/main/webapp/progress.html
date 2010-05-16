@@ -1,0 +1,20 @@
+<lift:surround with="default">
+    <lift:bind-at name="content">
+        <lift:Process.progress>
+            <p>
+                <label for="analyser-entry" class="bold">Analyser:</label> <span id="analyser-entry"><progress:analyser/></span>
+            </p>
+            <progress:mainBar/>
+            <p>
+                <label for="status-entry" class="bold">Status:</label> <span id="status-entry"><progress:status/></span>
+            </p>
+            <progress:subBar/>
+        </lift:Process.progress>
+    </lift:bind-at>
+    <lift:bind-at name="sidebar">
+        <div class="holder">
+            <h2>Current image</h2>
+            <lift:AnalysisSession.image style="max-width: 300px;"/>
+        </div>
+    </lift:bind-at>
+</lift:surround>

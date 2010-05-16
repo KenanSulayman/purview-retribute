@@ -5,7 +5,7 @@
     <groupId>org.purview</groupId>
     <artifactId>purview</artifactId>
     <packaging>pom</packaging>
-    <version>1.0</version>
+    <version>1.2</version>
 
     <name>Purview</name>
     <description>A framework for detecting digital image forgery</description>
@@ -40,25 +40,22 @@
 
     <scm>
         <connection>scm:git:git://github.com/dflemstr/purview.git</connection>
-        <developerConnection>scm:git:git@github.com:dflemstr/purview.git</developerConnection>
+        <developerConnection>scm:git:ssh://git@github.com/dflemstr/purview.git</developerConnection>
         <url>http://github.com/dflemstr/purview/tree/develop/</url>
     </scm>
 
     <modules>
         <module>purview-core</module>
         <module>purview-analysers</module>
-        <module>purview-nbp-ui</module>
         <module>purview-analyser-archetype</module>
-        <!--module>purview-web-ui</module--><!--TODO: re-enable when Lift works with 2.8.0-SNAPSHOT or later -->
+        <!--module>purview-web-ui</module--><!--TODO: re-enable when Lift becomes binary-compatible with RC1 -->
         <module>purview-qt-ui</module>
     </modules>
 
     <properties>
         <java.version>1.5</java.version>
-        <scala.version>2.8.0.Beta1</scala.version>
-        <netbeans.version>RELEASE68</netbeans.version>
+        <scala.version>2.8.0.RC1</scala.version>
         <lift.version>2.0-scala280-SNAPSHOT</lift.version>
-        <ui.brandingToken>purview</ui.brandingToken>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -77,18 +74,6 @@
                 <artifactId>scala-compiler</artifactId>
                 <version>${scala.version}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <!-- Swing interface -->
-                <groupId>org.scala-lang</groupId>
-                <artifactId>scala-swing</artifactId>
-                <version>${scala.version}</version>
-            </dependency>
-            <dependency>
-                <!-- Scala on Steroidz -->
-                <groupId>com.googlecode.scalaz</groupId>
-                <artifactId>scalaz-core_2.8.0.Beta1</artifactId>
-                <version>5.0-SNAPSHOT</version>
             </dependency>
 
             <!-- Utility libraries -->
@@ -119,48 +104,9 @@
 
             <!-- Qt -->
             <dependency>
-                <groupId>net.sf.qtjambi</groupId>
+                <groupId>com.trolltech</groupId>
                 <artifactId>qtjambi</artifactId>
-                <version>4.5.2_01</version>
-            </dependency>
-
-            <!-- Netbeans -->
-            <dependency>
-                <!-- Platform -->
-                <groupId>org.netbeans.cluster</groupId>
-                <artifactId>platform11</artifactId>
-                <version>${netbeans.version}</version>
-                <type>pom</type>
-            </dependency>
-            <dependency>
-                <!-- Utilities -->
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-openide-util</artifactId>
-                <version>${netbeans.version}</version>
-            </dependency>
-            <dependency>
-                <!-- Window management -->
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-openide-windows</artifactId>
-                <version>${netbeans.version}</version>
-            </dependency>
-            <dependency>
-                <!-- AWT utilities -->
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-openide-awt</artifactId>
-                <version>${netbeans.version}</version>
-            </dependency>
-            <dependency>
-                <!-- Module API -->
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-openide-modules</artifactId>
-                <version>${netbeans.version}</version>
-            </dependency>
-            <dependency>
-                <!-- Desktop layout API -->
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-jdesktop-layout</artifactId>
-                <version>${netbeans.version}</version>
+                <version>4.6.0</version>
             </dependency>
 
             <!-- Lift -->
@@ -175,6 +121,26 @@
                 <groupId>net.liftweb</groupId>
                 <artifactId>lift-widgets</artifactId>
                 <version>${lift.version}</version>
+            </dependency>
+
+            <!-- Database -->
+            <dependency>
+                <!-- Squeryl -->
+                <groupId>org.squeryl</groupId>
+                <artifactId>squeryl_2.8.0.Beta1-RC8</artifactId>
+                <version>0.9.3</version>
+            </dependency>
+            <dependency>
+                <!-- H2 -->
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.2.132</version>
+            </dependency>
+            <dependency>
+                <!-- MySQL -->
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>5.1.12</version>
             </dependency>
 
             <!-- Java EE -->
@@ -193,7 +159,7 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <!-- Mail management -->
+                <!-- Java mail API -->
                 <groupId>javax.mail</groupId>
                 <artifactId>mail</artifactId>
                 <version>1.4.3-rc1</version>
@@ -281,8 +247,9 @@
                             <arg>-target:jvm-${java.version}</arg>
                             <arg>-deprecation</arg>
                             <!--arg>-Yspecialize</arg-->
-                            <!--arg>-Yinline</arg-->
+                            <arg>-Yinline</arg>
                             <arg>-Ytailrecommend</arg>
+                            <arg>-optimise</arg>
                             <!--arg>-Ywarn-dead-code</arg-->
                             <!--arg>-Ywarn-shadowing</arg-->
                             <!--arg>-Xstrict-warnings</arg-->
@@ -307,22 +274,6 @@
                             <classpathContainer>ch.epfl.lamp.sdt.launching.SCALA_CONTAINER</classpathContainer>
                         </classpathContainers>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>nbm-maven-plugin</artifactId>
-                    <version>3.1</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <descriptor>src/main/nbm/module.xml</descriptor>
-                        <brandingToken>${ui.brandingToken}</brandingToken>
-                        <cluster>purview</cluster>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>com.google.code.maven-replacer-plugin</groupId>
-                    <artifactId>maven-replacer-plugin</artifactId>
-                    <version>1.3</version>
                 </plugin>
                 <plugin>
                     <groupId>org.mortbay.jetty</groupId>
@@ -376,29 +327,24 @@
             <url>http://scala-tools.org/repo-snapshots</url>
         </repository>
         <repository>
-            <id>netbeans</id>
-            <name>Repository hosting netbeans.org API artifacts</name>
-            <url>http://bits.netbeans.org/maven2</url>
-        </repository>
-        <repository>
             <id>OSS Staging</id>
             <name>Sonatype Staging Repository</name>
-            <url>http://oss.sonatype.org/content/groups/staging/</url>
+            <url>http://oss.sonatype.org/content/groups/staging</url>
         </repository>
         <repository>
             <id>JBoss</id>
             <name>JBoss Repository</name>
-            <url>http://repository.jboss.org/maven2/</url>
+            <url>http://repository.jboss.org/maven2</url>
         </repository>
         <repository>
             <id>JavaNet</id>
             <name>JavaNet Repository</name>
-            <url>http://download.java.net/maven/2/</url>
+            <url>http://download.java.net/maven/2</url>
         </repository>
         <repository>
-            <id>qtjambi</id>
-            <name>Qt Jambi repository</name>
-            <url>http://qtjambi.sourceforge.net/maven2/</url>
+            <id>purview-m2repo</id>
+            <name>Purview Maven2 Repository</name>
+            <url>http://github.com/dflemstr/purview-m2repo/raw/master</url>
         </repository>
     </repositories>
 
@@ -407,11 +353,6 @@
             <id>scala-tools.org/releases</id>
             <name>Scala-Tools Maven2 Releases Repository</name>
             <url>http://scala-tools.org/repo-releases</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>googlecode.com/maven-replacer-plugin</id>
-            <name>Maven Replacer Plugin repository</name>
-            <url>http://maven-replacer-plugin.googlecode.com/svn/release-repo</url>
         </pluginRepository>
     </pluginRepositories>
 </project>

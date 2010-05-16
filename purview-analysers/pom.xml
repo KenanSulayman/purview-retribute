@@ -5,7 +5,7 @@
     <parent>
         <artifactId>purview</artifactId>
         <groupId>org.purview</groupId>
-        <version>1.0</version>
+        <version>1.2</version>
     </parent>
 
     <artifactId>purview-analysers</artifactId>
@@ -16,11 +16,14 @@
 
     <modules>
         <module>bilinear-analyser</module>
+        <!--module>bilinear-em-analyser</module-->
         <module>copy-move-analyser</module>
         <module>error-level-analyser</module>
         <module>luminance-gradient-analyser</module>
         <module>metadata-analyser</module>
         <module>nearest-neighbor-analyser</module>
-        <module>noop-analyser</module>
+        <module>principal-component-analyser</module>
+        <module>jpeg-ghost-analyser</module>
+        <module>purview-default-analysers</module>
     </modules>
 </project>

@@ -2,10 +2,8 @@ package org.purview.webui.util
 
 import java.awt.Image
 import java.awt.image.BufferedImage
-import java.awt.image.DataBufferInt
 import java.awt.image.RenderedImage
 import java.awt.image.renderable.RenderableImage
-import java.util.Arrays
 import net.liftweb.http.S
 import org.apache.batik.svggen.SVGSyntax._
 import org.apache.batik.util.SVGConstants._
@@ -16,7 +14,7 @@ import org.w3c.dom.Element
 import scala.collection.mutable.WeakHashMap
 
 object SVGImageHandler extends DefaultImageHandler {
-  private val imageHandles = new WeakHashMap[Int, ImageManager.Image]
+  private val imageHandles = new WeakHashMap[Int, String]
 
   override def handleHREF(image: Image, imageElement: Element, generatorContext: SVGGeneratorContext) = {
     require(image != null)
@@ -53,13 +51,14 @@ object SVGImageHandler extends DefaultImageHandler {
 
   override def handleHREF(image: RenderedImage, imageElement: Element, generatorContext: SVGGeneratorContext) = {
     val hash = image.hashCode
-    val img = imageHandles.get(hash) getOrElse {
-      val tmp = ImageManager.saveImage(image)
-      imageHandles(hash) = tmp
-      tmp
+    val handle = imageHandles.get(hash) getOrElse {
+      val id = ImageManager.makeId
+      ImageManager.write(id, image)
+      imageHandles(hash) = id
+      id
     }
 
-    imageElement.setAttributeNS(XLINK_NAMESPACE_URI, ATTR_XLINK_HREF, S.hostAndPath + "/imagefile/" + img.id)
+    imageElement.setAttributeNS(XLINK_NAMESPACE_URI, ATTR_XLINK_HREF, S.hostAndPath + "/image/" + handle + ".png")
   }
 
   private def handleEmptyImage(imageElement: Element) = {

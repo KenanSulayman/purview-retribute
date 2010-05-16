@@ -1,0 +1,52 @@
+<lift:surround with="default">
+    <lift:bind-at name="content">
+        <head>
+            <link rel="stylesheet" href="/css/analysers.css" type="text/css"/>
+            <script type="text/javascript" src="/js/analysers.js"></script>
+        </head>
+        <p>
+            The image <q><lift:AnalysisSession.imageName/></q> is currently active.
+        </p>
+        <p>
+            Please select which analysers to use for the image. If the analyser has
+            settings, you can change them by clicking on their values.
+        </p>
+        <lift:AnalysisSession.analyserList form="post">
+            <fieldset>
+                <legend>Analysers</legend>
+                <analyserList:entry>
+                    <p>
+                        <div class="fl_left clear">
+                            <entry:enabled/>
+                        </div>
+                        <div class="analyser-entry">
+                            <span class="bold"><entry:name/></span><br/>
+                            <entry:description/>
+                            <entry:settings>
+                                <a href="#" class="settings-button fl_right">Settings...</a>
+                                <div class="settings-form">
+                                    <table>
+                                        <tbody>
+                                            <settings:setting>
+                                                <tr><td class="setting-label"><span class="bold"><setting:name/></span></td><td><setting:form/></td></tr>
+                                            </settings:setting>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </entry:settings>
+                        </div>
+                    </p>
+                </analyserList:entry>
+            </fieldset>
+            <p>
+                <analyserList:submit/>
+            </p>
+        </lift:AnalysisSession.analyserList>
+    </lift:bind-at>
+    <lift:bind-at name="sidebar">
+        <div class="holder">
+            <h2>Current image</h2>
+            <lift:AnalysisSession.image style="max-width: 300px;"/>
+        </div>
+    </lift:bind-at>
+</lift:surround>

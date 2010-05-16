@@ -1,14 +1,16 @@
 package org.purview.nearestneighboranalyser
 
 import org.purview.core.analysis.HeatMapImageAnalyser
+import org.purview.core.data.Computation
 import org.purview.core.data.Matrix
-import org.purview.core.process.Computation
 import org.purview.core.report.Warning
 import scala.math._
 
 class AnalyserImplementation extends HeatMapImageAnalyser {
-  val name = "Nearest Neighbor"
+  val name = "Nearest neighbor analyser"
   val description = "Finds nearest neighbor interpolated regions in an image"
+  override val version = Some("2.6")
+  override val author = Some("Moritz Roth & David Flemström")
 
   override val iconResource = Some("icons/analysers/nearest-neighbor.png")
 
@@ -39,35 +41,33 @@ class AnalyserImplementation extends HeatMapImageAnalyser {
         if newy > -1 && newy < height
       }yield matrix(newx, newy)
 
-      candidates contains src
+      if (candidates contains src) 1f else 0f
     }
   }
 
-  val findSquares: Computation[Matrix[Float]] = for (matrix <- markNearest) yield {
-    status("Finding squares in uniform pixel regions")
-    val countRange = 2 until 20
+//  val findSquares: Computation[Matrix[Float]] = for (matrix <- markNearest) yield {
+//    status("Finding squares in uniform pixel regions")
+//    val countRange = 2 until 10
+//
+//    for {
+//      (x,y,newSrc) <- matrix.cells
+//    } yield {
+//      if(newSrc) {
+//        (for {
+//          x0 <- countRange
+//          y0 <- countRange
+//        } yield {
+//          (x + x0 < matrix.width - 1) && (y + y0 < matrix.height - 1) &&
+//          matrix(x + x0, y) &&
+//          matrix(x, y + y0) &&
+//          matrix(x + x0, y + y0) && (for {
+//              dx <- 1 to x0
+//              dy <- 1 to y0
+//            } yield matrix(x + dx, y + dy)).count(identity) < 3
+//        }).lastIndexWhere(identity).toFloat
+//      } else 0f
+//    }
+//  }
 
-    for {
-      (x,y,newSrc) <- matrix.cells
-    } yield {
-      if(newSrc) {
-        countRange.findIndexOf { counter =>
-          (x + counter < matrix.width - 1) && (y + counter < matrix.height - 1) &&
-          matrix(x + counter, y) &&
-          matrix(x, y + counter) &&
-          matrix(x + counter, y + counter) && (for {
-              dx <- 1 to counter
-              dy <- 1 to counter
-            } yield matrix(x + dx, y + dy)).count(x => x) < 3
-        }.toFloat + 1f
-      } else 0f
-    }
-  }
-
-  private val gaussian30Kernel =
-    (for(i <- -30 to 30) yield (30 - abs(i)) / (30f * 30f * 30f)).toArray
-
-  override val convolve: Computation[Option[Array[Float]]] = Computation(Some(gaussian30Kernel))
-
-  val heatmap = findSquares
+  val heatmap = markNearest
 }

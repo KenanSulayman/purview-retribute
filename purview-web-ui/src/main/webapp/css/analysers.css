@@ -1,0 +1,21 @@
+div.settings-form {
+    display: none;
+}
+
+div.analyser-entry {
+    margin-left: 2em;
+}
+
+.settings-form table {
+    border: none;
+}
+
+.settings-form td {
+    border: none;
+    vertical-align: middle;
+}
+
+.setting-label {
+    width: 10em;
+    line-height: 2em;
+}

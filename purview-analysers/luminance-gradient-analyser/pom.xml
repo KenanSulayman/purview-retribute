@@ -5,7 +5,7 @@
     <parent>
         <artifactId>purview-analysers</artifactId>
         <groupId>org.purview</groupId>
-        <version>1.0</version>
+        <version>1.2</version>
     </parent>
 
     <artifactId>luminance-gradient-analyser</artifactId>
@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>purview-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

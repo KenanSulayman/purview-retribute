@@ -1,6 +1,6 @@
 package org.purview.qtui
 
-import com.trolltech.qt.core.QEventLoop
+import com.trolltech.qt.core.QCoreApplication
 import com.trolltech.qt.core.QTimer
 import com.trolltech.qt.core.Qt
 import com.trolltech.qt.gui.QApplication
@@ -16,7 +16,7 @@ object App {
     setWindowFlags(Qt.WindowType.SplashScreen)
     setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     setAutoFillBackground(false)
-    setWindowTitle("Loading Purview 1.0")
+    setWindowTitle("Loading Purview 1.2")
     resize(pixmap.width, pixmap.height)
 
     override def paintEvent(e: QPaintEvent) = {
@@ -33,8 +33,7 @@ object App {
     QApplication.initialize(args)
 
     splash.show()
-    val eventLoop = QEventLoop.fromNativePointer(QApplication.instance.nativePointer)
-    eventLoop.processEvents()
+    QCoreApplication.processEvents()
 
     val format = QGLFormat.defaultFormat
     format.setSampleBuffers(true)
@@ -42,13 +41,12 @@ object App {
 
     MainWindow.show()
     val t = new QTimer()
-    t.setInterval(2000)
+    t.setInterval(3000)
     t.setSingleShot(true)
     t.timeout.connect(this, "hideSplash()")
     t.start()
 
     QApplication.exec()
-    System.exit(0)
   }
 
   private def hideSplash() {

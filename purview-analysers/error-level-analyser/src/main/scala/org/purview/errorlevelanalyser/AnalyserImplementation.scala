@@ -9,7 +9,7 @@ import javax.imageio.ImageWriteParam
 import org.purview.core.analysis.HeatMapImageAnalyser
 import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.FloatRangeSetting
-import org.purview.core.process.Computation
+import org.purview.core.data.Computation
 import org.purview.core.report._
 import org.purview.core.transforms.ImageToMatrix
 import org.purview.core.transforms.MatrixToImage
@@ -17,18 +17,17 @@ import scala.math._
 
 class AnalyserImplementation extends HeatMapImageAnalyser
                                 with Settings {
-  val name = "Error level analyser"
-  val description = "Uses compression errors in JPEG images to find errors"
+  val name = "Error-level analyser"
+  val description = "Uses compression errors in JPEG images to find modification errors"
+  override val version = Some("1.1")
+  override val author = Some("Moritz Roth & David Flemström")
 
   val qualitySetting = new FloatRangeSetting("Quality level", 0, 1, 100)
   qualitySetting.value = 0.2f //default
-  val thresholdSetting = new FloatRangeSetting("Threshold", 0, 1, 100)
-  thresholdSetting.value = 0.1f //default
 
   private def quality: Float = qualitySetting.value
-  private def artifactThreshold: Float = thresholdSetting.value
-
-  val settings = List(qualitySetting, thresholdSetting)
+  
+  val settings = List(qualitySetting)
 
   override val message = "Noticeable compression artifact"
   override val reportLevel = Warning
@@ -51,11 +50,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser
         val rgb = new BufferedImage(in.getWidth, in.getHeight,
                                     BufferedImage.TYPE_INT_RGB)
         val g = rgb.createGraphics
-        try {
-          g.drawImage(in, 0, 0, null)
-        } finally {
-          g.dispose()
-        }
+        try g.drawImage(in, 0, 0, null) finally g.dispose()
 
         writer.setOutput(ImageIO.createImageOutputStream(out))
 
@@ -71,11 +66,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser
         val argb = new BufferedImage(in.getWidth, in.getHeight,
                                      BufferedImage.TYPE_INT_ARGB)
         val g2 = argb.createGraphics
-        try {
-          g2.drawImage(destroyedImg, 0, 0, null)
-        } finally {
-          g2.dispose()
-        }
+        try g2.drawImage(destroyedImg, 0, 0, null) finally g2.dispose()
 
         result = Some(argb)
       } catch {
@@ -92,22 +83,11 @@ class AnalyserImplementation extends HeatMapImageAnalyser
     }
   }
 
-  private val gaussian30Kernel =
-    (for(i <- -30 to 30) yield
-      (30 - abs(i)) / (30f * 30f * 30f)).toArray
-
-  override val convolve: Computation[Option[Array[Float]]] =
-    Computation(Some(gaussian30Kernel))
-
   private val errorMatrix = input >- MatrixToImage() >-
     introduceJPEGArtifacts >- ImageToMatrix()
 
   val diff = for(in <- input; artifacts <- errorMatrix) yield
-    in.zip(artifacts).map(x => {
-        //div by 2 because of sqrt(4); we want to average the color:
-        val w = (x._1 - x._2).weight / 2
-        if(w > artifactThreshold) w else 0
-      })
+    in.zip(artifacts).map(x => (x._1 - x._2).weight / 2)
 
   val heatmap = diff
 }
